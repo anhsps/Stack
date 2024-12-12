@@ -24,16 +24,15 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (done)
-            return;
+        if (done) return;
 
         // Time.realtimeSinceStartup % 2f : t thực tế từ khi app start chạy vs chu kỳ 2f => (t: 0->2)
         // -1f => (t: -1->1). Abs => (t: 1->0->1)
         var t = Mathf.Abs(Time.realtimeSinceStartup % 2f - 1f);
 
         var pos = oldPos + Vector3.up * oldScale.y;
-        var pos1 = pos + ((level % 2 == 0) ? Vector3.right : Vector3.forward) * 60;// .forward: phía trc
-        var pos2 = pos + ((level % 2 == 0) ? Vector3.left : Vector3.back) * 60;// .back: phía sau
+        var pos1 = pos + (level % 2 == 0 ? Vector3.right : Vector3.forward) * 60;// .forward: phía trc
+        var pos2 = pos + (level % 2 == 0 ? Vector3.left : Vector3.back) * 60;// .back: phía sau
         newCube.transform.position = Vector3.Lerp(pos1, pos2, t);// t 1->0->1 => nội suy tuyến tính từ end(pos2)->start(pos1) trước
 
         if (Input.GetMouseButtonDown(0))
@@ -59,7 +58,7 @@ public class GameManager : MonoBehaviour
             if (newScale.x <= 0f || newScale.z <= 0f)
             {
                 done = true;
-                StartCoroutine(Restart());
+                Invoke("Restart", 3f);
                 return;
             }
         }
@@ -75,16 +74,12 @@ public class GameManager : MonoBehaviour
         Camera.main.transform.LookAt(newCube.transform.position);
     }
 
-    IEnumerator Restart()
-    {
-        yield return new WaitForSeconds(3f);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
+    private void Restart() => SceneManager.LoadScene(0);
 
     private void UpdateBestScore()
     {
-        if (level - 1 > PlayerPrefs.GetInt("BestScore", 0))
-            PlayerPrefs.SetInt("BestScore", level - 1);
-        bestText.text = PlayerPrefs.GetInt("BestScore").ToString();
+        if (level - 1 > PlayerPrefs.GetInt("Best", 0))
+            PlayerPrefs.SetInt("Best", level - 1);
+        bestText.text = PlayerPrefs.GetInt("Best").ToString();
     }
 }

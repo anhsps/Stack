@@ -12,7 +12,6 @@ public class GameManager : MonoBehaviour
     private bool done;
     private Vector3 newPos => newCube.transform.position;
     private Vector3 oldPos => oldCube.transform.position;
-    private Vector3 newScale => newCube.transform.localScale;
     private Vector3 oldScale => oldCube.transform.localScale;
 
     // Start is called before the first frame update
@@ -44,27 +43,31 @@ public class GameManager : MonoBehaviour
         if (oldCube != null)
         {
             newCube.transform.position = new Vector3(Mathf.Round(newPos.x), newPos.y, Mathf.Round(newPos.z));
-            newCube.transform.localScale = new Vector3(oldScale.x - Mathf.Abs(newPos.x - oldPos.x),
-                oldScale.y, oldScale.z - Mathf.Abs(newPos.z - oldPos.z));
-            newCube.transform.position = Vector3.Lerp(newPos, oldPos, 0.5f) + Vector3.up * oldScale.y * 0.5f;
 
-            if (newScale.x <= 0f || newScale.z <= 0f)
+            float moveX = Mathf.Abs(newPos.x - oldPos.x);
+            float moveZ = Mathf.Abs(newPos.z - oldPos.z);
+            if (oldScale.x < moveX || oldScale.z < moveZ)
             {
                 done = true;
                 Invoke("Restart", 3f);
                 return;
             }
+
+            newCube.transform.localScale = new Vector3(oldScale.x - moveX, oldScale.y, oldScale.z - moveZ);
+            newCube.transform.position = Vector3.Lerp(newPos, oldPos, 0.5f) + Vector3.up * oldScale.y * 0.5f;
         }
 
         level++;
         scoreText.text = level - 1 + "";
         UpdateBestScore();
+
         oldCube = newCube;
         newCube = Instantiate(oldCube);
         newCube.name = level.ToString();
         newCube.GetComponent<MeshRenderer>().material.color = Color.HSVToRGB((level / 50f) % 1f, 1f, 1f);
+
         Camera.main.transform.position = newCube.transform.position + new Vector3(100, 100, 100);
-        Camera.main.transform.LookAt(newCube.transform.position);
+        Camera.main.transform.LookAt(newCube.transform.position + Vector3.up * 40);
     }
 
     private void Restart() => SceneManager.LoadScene(0);
